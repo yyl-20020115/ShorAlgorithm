@@ -1,18 +1,13 @@
 ﻿using System.Numerics;
 using System.Security.Cryptography;
 
-namespace Simulation.Shor;
+namespace ShorAlgorithm;
 
 class Program
 {
     /*********************************************************************
      *	shor.cc -- Use Shor's Algorithm
      *		to factor a large BigInteger
-     *
-     *	Compile:
-     *	 g++ -s -O4 -o shor shor.c
-     *	Invoke:
-     *	 ./shor NumbertoFactor InitialK
      * ChangeLog:
      *  970225 -- Created by Paul Herman <a540pau@pslc.ucla.edu>
     **********************************************************************/
