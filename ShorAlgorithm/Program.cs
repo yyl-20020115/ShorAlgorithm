@@ -13,12 +13,12 @@ class Program
     **********************************************************************/
     static BigInteger GenerateRandomBigInteger(int count = 8)
     {
+        if (count <= 0) throw new ArgumentException(null, nameof(count));
         // 创建一个RandomNumberGenerator实例
-        using var rng = RandomNumberGenerator.Create();
+        using var generator = RandomNumberGenerator.Create();
         // 生成一个足够长的字节数组，例如16字节（128位）
         var randomBytes = new byte[count]; // 可以根据需要增加字节数以生成更大的数
-        rng.GetBytes(randomBytes);
-
+        generator.GetBytes(randomBytes);
         // 将字节数组转换为BigInteger
         // 注意：这里使用了BigEndianBitConverter，因为BigInteger期望高位在前（大端格式）
         return new BigInteger(randomBytes);
