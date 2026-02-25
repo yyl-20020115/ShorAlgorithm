@@ -50,11 +50,14 @@ class Program
     /*               t +/- 1 and n have a common factor.  If not, try another a
     /*********************/
 
-    static BigInteger ShorFactor(BigInteger n, long retries = 4096, bool use_cycle = false)
+    static BigInteger ShorFactor(BigInteger n, BigInteger a, long retries = 4096, bool use_cycle = false)
     {
-        BigInteger a, t1, t2, f1, f2;
+        BigInteger t1, t2, f1, f2;
         int r, j;
-        while(true)
+        
+        a = a.IsZero ? GenerateRandomBigInteger(n.GetByteCount()) : a;
+
+        while (true)
         {
         retry:
             j = 2;
@@ -107,7 +110,7 @@ class Program
     static int Main(string[] args)
     {
         var n = args.Length > 0
-            ? BigInteger.TryParse(args[0], out var v) 
+            ? BigInteger.TryParse(args[0], out var v)
             ? v : default_value
             : default_value
             ;
@@ -115,7 +118,7 @@ class Program
         var i = 1;
         while (n != BigInteger.One)
         {
-            var k = ShorFactor(n);
+            var k = ShorFactor(n,BigInteger.Zero);
             Console.WriteLine($"Found q{i} is = {k}");
             n /= k;
             i++;
