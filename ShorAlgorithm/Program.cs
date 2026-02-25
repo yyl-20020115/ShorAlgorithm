@@ -52,9 +52,9 @@ class Program
 
     static BigInteger ShorFactor(BigInteger n, BigInteger a, long retries = 4096, bool use_cycle = false)
     {
-        BigInteger t1, t2, f1, f2;
-        int r, j;
-        
+        BigInteger t1, t2, f1, f2, r;
+        int j;
+
         a = a.IsZero ? GenerateRandomBigInteger(n.GetByteCount()) : a;
 
         while (true)
@@ -64,17 +64,13 @@ class Program
             //我在这里改为随机化
             a = GenerateRandomBigInteger(n.GetByteCount());
 
-            r = use_cycle ? GetCycle(a, n) : (int)BigInteger.ModPow(a, j, n);
+            r = use_cycle ? GetCycle(a, n) : BigInteger.ModPow(a, j, n);
             for (; ; j++)
             {
                 //随机数a是n的因子
                 f1 = BigInteger.GreatestCommonDivisor(a, n);
                 if (f1 == n) goto retry;
-                if (f1 != BigInteger.One)
-                {
-                    Console.WriteLine($"First Found f1 = {f1}");
-                    return f1;
-                }
+                if (f1 != BigInteger.One) return f1;
                 //t1和t2分别是a^((a^j mod n)/2) mod n的+1和-1
                 t1 = BigInteger.ModPow(a, (r >> 1), n);
                 t1 += 1;
@@ -96,7 +92,7 @@ class Program
                 if (--retries == 0)
                     return n;
                 //计算a^j mod n,求r的下一个数值
-                r = (int)BigInteger.ModPow(a, j, n);
+                r = BigInteger.ModPow(a, j, n);
                 //如果r为负数，说明a^j mod n的结果是负数，这不应该发生，因为模运算的结果应该在0到n-1之间
                 if (r < 0)
                 {
@@ -105,26 +101,81 @@ class Program
             }
         }
     }
+    public static bool IsPrime(BigInteger number)
+    {
+        // 小于等于1的数不是质数
+        if (number <= 1)
+            return false;
 
-    const long default_value = 70191551;
+        // 2 是质数
+        if (number == 2)
+            return true;
+
+        // 偶数（除了2）不是质数
+        if (number.IsEven)
+            return false;
+
+        // 使用试除法检查从3到√n的所有奇数
+        BigInteger sqrt = Sqrt(number);
+        for (BigInteger i = 3; i <= sqrt; i += 2)
+        {
+            if (number % i == 0)
+                return false;
+        }
+
+        return true;
+    }
+
+    // 计算 BigInteger 的平方根
+    private static BigInteger Sqrt(BigInteger number)
+    {
+        if (number == 0)
+            return 0;
+
+        BigInteger x = number;
+        BigInteger y = (x + 1) / 2;
+
+        while (y < x)
+        {
+            x = y;
+            y = (x + number / x) / 2;
+        }
+
+        return x;
+    }
+    static BigInteger default_value = 70191551;
     static int Main(string[] args)
     {
+        default_value = GenerateRandomBigInteger(32) | BigInteger.One;
+
         var n = args.Length > 0
             ? BigInteger.TryParse(args[0], out var v)
             ? v : default_value
             : default_value
             ;
+        var u = n;
+        List<BigInteger> factors = [];
         Console.WriteLine($"Factoring n = {n}:");
         var i = 1;
+        var retries = n.GetByteCount() * 4096;
         while (n != BigInteger.One)
         {
-            var k = ShorFactor(n,BigInteger.Zero);
-            Console.WriteLine($"Found q{i} is = {k}");
-            n /= k;
+            var factor = ShorFactor(n, BigInteger.Zero, retries);
+            Console.WriteLine($"Found factor{i} = {factor}, IsPrime={IsPrime(factor)}");
+            n /= factor;
             i++;
+            factors.Add(factor);
         }
         Console.WriteLine("Factorization complete.");
-
+        var s = factors.Aggregate((a, b) => a * b);
+        if (s == u)
+        {
+            Console.WriteLine("Verification: OK.");
+        }
+        else
+        {
+            Console.WriteLine("Verification: Fail.");
+        }
         return 0;
     }
 }
