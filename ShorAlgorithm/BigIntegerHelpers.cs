@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Reflection;
 using System.Security.Cryptography;
 
 namespace ShorAlgorithm;
@@ -99,7 +100,7 @@ public static class BigIntegerHelpers
     }
     public static BigInteger Pow(BigInteger a, BigInteger b)
     {
-        const int max = int.MaxValue>>1;
+        const int max = int.MaxValue >> 1;
         var total = BigInteger.One;
         while (b > max)
         {
@@ -161,6 +162,25 @@ public static class BigIntegerHelpers
     public static bool IsInteger(double value)
         => Math.Abs(value - (int)value) < double.Epsilon
         ;
+
+    public static (BigInteger, BigInteger) Log(BigInteger a, BigInteger n)
+    {
+        if (a > n)
+        {
+            return (BigInteger.Zero, n);
+        }
+        var count = BigInteger.Zero;
+        var result = BigInteger.One;
+        while (true)
+        {
+            if (result > n)
+                break;
+            result *= a;
+            count++;
+        }
+
+        return (count, n - result);
+    }
     public static BigInteger GetFactor(BigInteger N, long kmax = 4096, long retries = 1024)
     {
         if (N.IsEven) return 2;
@@ -173,15 +193,12 @@ public static class BigIntegerHelpers
                 for (var n = Sqrt(k * N); n >= 1; n >>= 1)
                 {
                     var res = (k * N - n ^ 2);
-
-
-                    var r = BigInteger.Log(res) / BigInteger.Log(a);
-                    if (!IsInteger(r)) continue;
-                    var s = (int)r;
-                    if (BigInteger.Pow(a, s) == k * N)
+                    (var s, var rem) = Log(a, res);
+                    if (rem != 0 && s.IsEven) continue;
                     {
-                        var t1 = BigInteger.Pow(a, (s >> 1)) - n;
-                        var t2 = BigInteger.Pow(a, (s >> 1)) + n;
+                        s >>= 1;
+                        var t1 = Pow(a, s) - n;
+                        var t2 = Pow(a, s) + n;
                         var f1 = BigInteger.GreatestCommonDivisor(t1, N);
                         if (f1 != BigInteger.One)
                             return t1;
