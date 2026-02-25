@@ -30,15 +30,18 @@ class Program
     /********************************************************************/
     static int Period(BigInteger a, BigInteger n)
     {
-        int count;
+        var count = 0L;
 
-        count = 1;
-        while (BigInteger.ModPow(a, count, n) != 1)
+        Parallel.For(1L, long.MaxValue, (i, state) =>
         {
-            count++;
-            //Console.WriteLine(count);
-        }
-        return count;
+            if (BigInteger.ModPow(a, i, n) == BigInteger.One)
+            {
+                count = i;
+                state.Stop();
+            }
+        });
+
+        return (int)count;
     }
 
     /*********************
@@ -47,67 +50,75 @@ class Program
     /*               t +/- 1 and n have a common factor.  If not, try another a
     /*********************/
 
-    static BigInteger ShorFactor(BigInteger n)
+    static BigInteger ShorFactor(BigInteger n, long retries = 4096)
     {
         BigInteger a, t1, t2, f1, f2;
         int r;
-        //我在这里改为随机化
-        a = GenerateRandomBigInteger();
-
-        for (BigInteger j = 2; ; j++)
+        do
         {
-            //随机数a是n的因子
-            f1 = BigInteger.GreatestCommonDivisor(a, n);
-            if (f1 != BigInteger.One)
-            {
-                Console.WriteLine($"First Found f1 = {f1}");
-                return f1;
-            }
-            //本质上就是找P序列
-            //r = Period(a, n);
-            //本质上就是找Q序列
-            //r=a^j mod n   
-            r = (int)BigInteger.ModPow(a, j, n);
-            //如果r为负数，说明a^j mod n的结果是负数，这不应该发生，因为模运算的结果应该在0到n-1之间
-            if (r < 0)
-            {
-                Console.WriteLine("Bad r");
-                return BigInteger.One;
-            }
-            //t1和t2分别是a^((a^j mod n)/2) mod n的+1和-1
-            t1 = BigInteger.ModPow(a, (r >> 1), n);
-            t1 += 1;
-            t2 = t1 - 2;
+        retry:
+            //我在这里改为随机化
+            a = GenerateRandomBigInteger();
 
-            //t1=(a^(r/2) mod n) + 1
-            //t2=(a^(r/2) mod n) - 1
+            for (BigInteger j = 2; ; j++)
+            {
+                //随机数a是n的因子
+                f1 = BigInteger.GreatestCommonDivisor(a, n);
+                if (f1 == n) goto retry;
+                if (f1 != BigInteger.One)
+                {
+                    Console.WriteLine($"First Found f1 = {f1}");
+                    return f1;
+                }
+                //本质上就是找P序列
+                //r = Period(a, n);
+                //本质上就是找Q序列
+                //r=a^j mod n   
+                r = (int)BigInteger.ModPow(a, j, n);
+                //如果r为负数，说明a^j mod n的结果是负数，这不应该发生，因为模运算的结果应该在0到n-1之间
+                if (r < 0)
+                {
+                    goto retry;
+                }
+                //t1和t2分别是a^((a^j mod n)/2) mod n的+1和-1
+                t1 = BigInteger.ModPow(a, (r >> 1), n);
+                t1 += 1;
+                t2 = t1 - 2;
 
-            Console.WriteLine($"At t1 = {t1}");
-            //测试t1
-            f1 = BigInteger.GreatestCommonDivisor(t1, n);
-            if (f1 != BigInteger.One)
-            {
-                Console.WriteLine($"Found f1 = {f1}");
-                return f1;
+                //t1=(a^(r/2) mod n) + 1
+                //t2=(a^(r/2) mod n) - 1
+
+                //Console.WriteLine($"Trying t1 = {t1}");
+                //测试t1
+                f1 = BigInteger.GreatestCommonDivisor(t1, n);
+                if (f1 != BigInteger.One && f1 != n)
+                {
+                    return f1;
+                }
+                //测试t2
+                f2 = BigInteger.GreatestCommonDivisor(t2, n);
+                if (f2 != BigInteger.One && f2 != n)
+                {
+                    return f2;
+                }
+                //如果t1和t2都没有找到因子，那么就换一个a继续试s
+                a += 1;
+                if (--retries == 0) 
+                    return n;
             }
-            //测试t2
-            f2 = BigInteger.GreatestCommonDivisor(t2, n);
-            if (f2 != BigInteger.One)
-            {
-                Console.WriteLine($"Found f2 = {f2}");
-                return f2;
-            }
-            //如果t1和t2都没有找到因子，那么就换一个a继续试s
-            a += 1;
-        }
-        //return BigInteger.One;    // No luck at all (This never happens)
+        } while (true);
     }
 
     static int Main()
     {
-        BigInteger k = ShorFactor(70191551);
+        BigInteger n = 70191551;
 
-        Console.WriteLine($"Found q is = {k}");
+        while (n != BigInteger.One)
+        {
+            var k = ShorFactor(n);
+            Console.WriteLine($"Found q is = {k}");
+            n /= k;
+        }
 
         return 0;
     }
