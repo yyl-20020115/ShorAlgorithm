@@ -11,7 +11,7 @@ class Program
      * ChangeLog:
      *  970225 -- Created by Paul Herman <a540pau@pslc.ucla.edu>
     **********************************************************************/
-    static BigInteger GenerateRandomBigInteger(int count = 8)
+    static BigInteger GenerateRandomOddBigInteger(int count = 8)
     {
         if (count <= 0) throw new ArgumentException(null, nameof(count));
         // 创建一个RandomNumberGenerator实例
@@ -19,8 +19,10 @@ class Program
         // 生成一个足够长的字节数组，例如16字节（128位）
         var randomBytes = new byte[count]; // 可以根据需要增加字节数以生成更大的数
         generator.GetBytes(randomBytes);
+        randomBytes[0] |= 1; // 确保生成的数是奇数，以增加找到因子的概率
         // 将字节数组转换为BigInteger
         // 注意：这里使用了BigEndianBitConverter，因为BigInteger期望高位在前（大端格式）
+        randomBytes[^1] &= 0x7f; // 确保生成的数是正数
         return new (randomBytes);
     }
 
@@ -55,21 +57,19 @@ class Program
         BigInteger t1, t2, f1, f2, r;
         int j;
 
-        a = a.IsZero ? GenerateRandomBigInteger(n.GetByteCount()) : a;
+        a = a.IsZero ? GenerateRandomOddBigInteger(n.GetByteCount()) : a;
 
         while (true)
         {
-        retry:
             j = 2;
             //我在这里改为随机化
-            a = GenerateRandomBigInteger(n.GetByteCount());
 
             r = use_cycle ? GetCycle(a, n) : BigInteger.ModPow(a, j, n);
             for (; ; j++)
             {
                 //随机数a是n的因子
                 f1 = BigInteger.GreatestCommonDivisor(a, n);
-                if (f1 == n) goto retry;
+                if (f1 == n) goto tail;
                 if (f1 != BigInteger.One) return f1;
                 //t1和t2分别是a^((a^j mod n)/2) mod n的+1和-1
                 t1 = BigInteger.ModPow(a, (r >> 1), n);
@@ -94,8 +94,10 @@ class Program
                 //计算a^j mod n,求r的下一个数值
                 r = BigInteger.ModPow(a, j, n);
                 //如果r为负数，说明a^j mod n的结果是负数，这不应该发生，因为模运算的结果应该在0到n-1之间
-                if (r < 0) goto retry;
+                if (r < 0) goto tail;
             }
+            tail:
+                a = GenerateRandomOddBigInteger(n.GetByteCount());
         }
     }
     public static bool IsPrime(BigInteger number)
@@ -143,7 +145,7 @@ class Program
     static BigInteger default_value = 70191551;
     static int Main(string[] args)
     {
-        default_value = GenerateRandomBigInteger(32) | BigInteger.One;
+        default_value = GenerateRandomOddBigInteger(32);
 
         var n = args.Length > 0
             ? BigInteger.TryParse(args[0], out var v)
