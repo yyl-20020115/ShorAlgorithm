@@ -54,7 +54,7 @@ class Program
     {
         BigInteger a, t1, t2, f1, f2;
         int r, j;
-        do
+        while(true)
         {
         retry:
             j = 2;
@@ -72,9 +72,6 @@ class Program
                     Console.WriteLine($"First Found f1 = {f1}");
                     return f1;
                 }
-                //本质上就是找P序列
-                //本质上就是找Q序列
-                //r=a^j mod n   
                 //t1和t2分别是a^((a^j mod n)/2) mod n的+1和-1
                 t1 = BigInteger.ModPow(a, (r >> 1), n);
                 t1 += 1;
@@ -83,23 +80,19 @@ class Program
                 //t1=(a^(r/2) mod n) + 1
                 //t2=(a^(r/2) mod n) - 1
 
-                //Console.WriteLine($"Trying t1 = {t1}");
                 //测试t1
                 f1 = BigInteger.GreatestCommonDivisor(t1, n);
                 if (f1 != BigInteger.One && f1 != n)
-                {
                     return f1;
-                }
                 //测试t2
                 f2 = BigInteger.GreatestCommonDivisor(t2, n);
                 if (f2 != BigInteger.One && f2 != n)
-                {
                     return f2;
-                }
                 //如果t1和t2都没有找到因子，那么就换一个a继续试s
                 a += 1;
                 if (--retries == 0)
                     return n;
+                //计算a^j mod n,求r的下一个数值
                 r = (int)BigInteger.ModPow(a, j, n);
                 //如果r为负数，说明a^j mod n的结果是负数，这不应该发生，因为模运算的结果应该在0到n-1之间
                 if (r < 0)
@@ -107,16 +100,18 @@ class Program
                     goto retry;
                 }
             }
-        } while (true);
+        }
     }
 
+    const long default_value = 70191551;
     static int Main(string[] args)
     {
-        const long default_value = 70191551;
-        BigInteger n = args.Length > 0
-            ? BigInteger.TryParse(args[0], out var v) ? v : default_value
-            : default_value;
-        Console.WriteLine($"Factoring n = {n}");
+        var n = args.Length > 0
+            ? BigInteger.TryParse(args[0], out var v) 
+            ? v : default_value
+            : default_value
+            ;
+        Console.WriteLine($"Factoring n = {n}:");
         var i = 1;
         while (n != BigInteger.One)
         {
@@ -130,4 +125,3 @@ class Program
         return 0;
     }
 }
-
