@@ -21,7 +21,7 @@ class Program
         generator.GetBytes(randomBytes);
         // 将字节数组转换为BigInteger
         // 注意：这里使用了BigEndianBitConverter，因为BigInteger期望高位在前（大端格式）
-        return new BigInteger(randomBytes);
+        return new (randomBytes);
     }
 
     /********************************************************************
