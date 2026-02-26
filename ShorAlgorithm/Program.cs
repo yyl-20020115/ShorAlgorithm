@@ -32,9 +32,13 @@ class Program
     /*               t +/- 1 and n have a common factor.  If not, try another a
     /************************************************************************************/
 
-    static BigInteger default_value = 70191551;
+    static BigInteger default_value = 7*31;
     static int Main(string[] args)
     {
+        default_value = 31;
+        var fs = BigIntegerHelpers.GetFactors(default_value);
+
+
         default_value = BigIntegerHelpers.GenerateRandomOddBigInteger(32);
 
         var n = args.Length > 0

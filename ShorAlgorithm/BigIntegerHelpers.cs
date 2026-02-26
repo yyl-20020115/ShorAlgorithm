@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using System.Reflection;
 using System.Security.Cryptography;
 
 namespace ShorAlgorithm;
@@ -211,5 +210,28 @@ public static class BigIntegerHelpers
         }
         return BigInteger.One;
     }
+    public static BigInteger NFactorial(BigInteger n)
+    {
+        var result = BigInteger.One;
+        for (var i = BigInteger.One; i <= n; i++)
+        {
+            result *= i;
+        }
+        return result;
+    }
 
+    public static (BigInteger, BigInteger, BigInteger, BigInteger) GetFactors(BigInteger N)
+    {
+        if (N.IsEven)
+        {
+            return (BigInteger.Zero, BigInteger.Zero, 2, BigInteger.One);
+        }
+        var n = Sqrt(N);
+        var ns = NFactorial(n);
+        var np = Pow(ns, (n + 1));
+        var (Quotient, Remainder) = BigInteger.DivRem((np + 1) * (np - 1), N);
+
+        return (Quotient, Remainder, BigInteger.GreatestCommonDivisor(np + 1, N),
+            BigInteger.GreatestCommonDivisor(np - 1, N));
+    }
 }
