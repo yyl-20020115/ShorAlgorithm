@@ -219,6 +219,52 @@ public static class BigIntegerHelpers
         }
         return result;
     }
+    public static BigInteger FactorialSteinCD(BigInteger a, BigInteger b)
+    {
+        var result = BigInteger.One;
+        for (var i = a; i >= BigInteger.One;--i)
+        {
+            result *= i;
+            if(SteinGCD(result, b) != BigInteger.One)
+                return result;
+        }
+        return BigInteger.One;
+    }
+
+
+    public static BigInteger SteinGCD(BigInteger a, BigInteger b)
+    {
+        if (a.IsZero) return b;
+        if (b.IsZero) return a;
+        var shift = 0;
+        // 找出a和b的最大公共2的幂次
+        while (((a | b) & 1) == 0)
+        {
+            a >>= 1;
+            b >>= 1;
+            shift++;
+        }
+        // 将a和b中较小的数除以2，直到它们变为奇数
+        while ((a & 1) == 0)
+            a >>= 1;
+        // 迭代计算GCD
+        do
+        {
+            // 将较大的数除以2，直到它变为奇数
+            while ((b & 1) == 0)
+                b >>= 1;
+            // 交换a和b，使得a始终是较小的数
+            if (a > b)
+            {
+                (b, a) = (a, b);
+            }
+            // 从较大的数中减去较小的数
+            b -= a;
+            // 继续迭代，直到b变为0
+        } while (!b.IsZero);
+        // 最终的GCD是a乘以之前找到的最大公共2的幂次
+        return a << shift;
+    }
 
     public static (BigInteger, BigInteger, BigInteger, BigInteger) GetFactors(BigInteger N)
     {
