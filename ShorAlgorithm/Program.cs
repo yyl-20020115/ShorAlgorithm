@@ -35,7 +35,7 @@ class Program
     static BigInteger default_value = 7*31;
     static int Main(string[] args)
     {
-        default_value = 31;
+        //default_value = 31;
         var fs = BigIntegerHelpers.GetFactors(default_value);
 
 

@@ -222,15 +222,10 @@ public static class BigIntegerHelpers
 
     public static (BigInteger, BigInteger, BigInteger, BigInteger) GetFactors(BigInteger N)
     {
-        if (N.IsEven)
-        {
-            return (BigInteger.Zero, BigInteger.Zero, 2, BigInteger.One);
-        }
         var n = Sqrt(N);
-        var ns = NFactorial(n);
-        var np = Pow(ns, (n + 1));
+        var nf = NFactorial(n);
+        var np = Pow(nf, (n + 1));
         var (Quotient, Remainder) = BigInteger.DivRem((np + 1) * (np - 1), N);
-
         return (Quotient, Remainder, BigInteger.GreatestCommonDivisor(np + 1, N),
             BigInteger.GreatestCommonDivisor(np - 1, N));
     }
