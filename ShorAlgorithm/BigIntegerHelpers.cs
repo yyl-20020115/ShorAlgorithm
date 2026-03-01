@@ -222,10 +222,10 @@ public static class BigIntegerHelpers
     public static BigInteger FactorialSteinCD(BigInteger a, BigInteger b)
     {
         var result = BigInteger.One;
-        for (var i = a; i >= BigInteger.One;--i)
+        for (var i = a; i >= BigInteger.One; --i)
         {
             result *= i;
-            if(SteinGCD(result, b) != BigInteger.One)
+            if (SteinGCD(result, b) != BigInteger.One)
                 return result;
         }
         return BigInteger.One;
@@ -236,25 +236,23 @@ public static class BigIntegerHelpers
     {
         if (a.IsZero) return b;
         if (b.IsZero) return a;
-        var s = 0;
         var shift = 0;
         // 找出a和b的最大公共2的幂次
-        while (((a | b) & 1) == 0)
+        while ((a | b).IsEven)
         {
             a >>= 1;
             b >>= 1;
             shift++;
         }
         // 将a和b中较小的数除以2，直到它们变为奇数
-        while ((a & 1) == 0) s++;
-        a >>= s;
+        while (a.IsEven)
+            a >>= 1;
         // 迭代计算GCD
         do
         {
-            s = 0;
             // 将较大的数除以2，直到它变为奇数
-            while ((b & 1) == 0) s++;
-            b >>= s;
+            while (b.IsEven)
+                b >>= 1;
             // 交换a和b，使得a始终是较小的数
             if (a > b)
             {
