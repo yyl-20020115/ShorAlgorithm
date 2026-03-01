@@ -236,6 +236,7 @@ public static class BigIntegerHelpers
     {
         if (a.IsZero) return b;
         if (b.IsZero) return a;
+        var s = 0;
         var shift = 0;
         // 找出a和b的最大公共2的幂次
         while (((a | b) & 1) == 0)
@@ -245,14 +246,15 @@ public static class BigIntegerHelpers
             shift++;
         }
         // 将a和b中较小的数除以2，直到它们变为奇数
-        while ((a & 1) == 0)
-            a >>= 1;
+        while ((a & 1) == 0) s++;
+        a >>= s;
         // 迭代计算GCD
         do
         {
+            s = 0;
             // 将较大的数除以2，直到它变为奇数
-            while ((b & 1) == 0)
-                b >>= 1;
+            while ((b & 1) == 0) s++;
+            b >>= s;
             // 交换a和b，使得a始终是较小的数
             if (a > b)
             {
